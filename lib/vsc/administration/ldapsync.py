@@ -179,7 +179,10 @@ class LdapSyncer(object):
         for group in changed_groups:
             vo = False
             try:
-                vo = mkVo(self.client.vo[group.vsc_id].get()[1])
+                result = self.client.vo[group.vsc_id].get()[1]
+                # if result is empty, the group is not an VO.
+                if result:
+                    vo = mkVo(result)
             except HTTPError as err:
                 # if a 404 occured, the group is not an VO, so we skip this. Otherwise something else went wrong.
                 if err.code != 404:
