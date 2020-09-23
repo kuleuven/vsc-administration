@@ -150,8 +150,8 @@ class LdapSyncer(object):
             quotas = self.client.account[account.vsc_id].quota.get()[1]
             for quota in quotas:
                 for stype in ['home', 'data', 'scratch']:
-                    # only gent sets filesets for vo's, so not gvo is user. (other institutes is empty or "None"
-                    if quota['storage']['storage_type'] == stype and not quota['fileset'].startswith('gvo'):
+                    # Ugly check for institute - ldap should not be used for quota
+                    if quota['storage']['storage_type'] == stype and quota['storage']['institute'] == "leuven":
                         ldap_attributes['%sQuota' % stype] = ["%d" % quota["hard"]]
 
             result = self.add_or_update(VscLdapUser, account.vsc_id, ldap_attributes, dry_run)
