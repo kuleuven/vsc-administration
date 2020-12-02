@@ -46,12 +46,13 @@ class LdapSyncer(object):
     This class implements a system for syncing changes from the accountpage api
     to the vsc ldap
     """
-    def __init__(self, client):
+    def __init__(self, client, host_institute):
         """
         Create an ldap syncer, requires a RestClient client to get the information from
         (typically AccountpageClient)
         """
         self.client = client
+        self.host_institute = host_institute
         self.now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
     def add_or_update(self, VscLdapKlass, cn, ldap_attributes, dry_run):
@@ -153,6 +154,10 @@ class LdapSyncer(object):
             logging.debug('fetching quota')
             quotas = self.client.account[account.vsc_id].quota.get()[1]
             for quota in quotas:
+                # Only update quota's for the host institute
+                if quota['storage']['institute'] != self.host_institute:
+                    continue
+
                 for stype in ['home', 'data', 'scratch']:
                     # only gent sets filesets for vo's, so not gvo is user. (other institutes is empty or "None"
                     if quota['storage']['storage_type'] == stype and not quota['fileset'].startswith('gvo'):

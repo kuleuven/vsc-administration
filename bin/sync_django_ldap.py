@@ -31,6 +31,7 @@ from vsc.administration.ldapsync import LdapSyncer, ERROR
 
 from vsc.ldap.configuration import VscConfiguration
 from vsc.ldap.utils import LdapQuery
+from vsc.config.base import GENT
 from vsc.utils import fancylogger
 from vsc.utils.nagios import NAGIOS_EXIT_CRITICAL
 from vsc.utils.script_tools import ExtendedSimpleOption
@@ -53,6 +54,7 @@ def main():
         'start-timestamp': ("The timestamp form which to start, otherwise use the cached value", None, "store", None),
         'access_token': ('OAuth2 token identifying the user with the accountpage', None, 'store', None),
         'account_page_url': ('URL of the account page', None, 'store', None),
+        'host_institute': ('Name of the institute where this script is being run', str, 'store', GENT),
         'start_timestamp': ('Timestamp to start the sync from', str, 'store', None),
         'user': ('System user to run the sync', str, 'store', NONROOT_DEFAULT_USER),
         }
@@ -99,7 +101,7 @@ def main():
                 logging.info("Now running as user %s (uid: %s)", child_user, os.geteuid())
 
             client = AccountpageClient(token=opts.options.access_token, url=opts.options.account_page_url + '/api')
-            syncer = LdapSyncer(client)
+            syncer = LdapSyncer(client, opts.options.host_institute)
             last = last_timestamp
             altered_accounts = syncer.sync_altered_accounts(last, opts.options.dry_run)
 
